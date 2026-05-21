@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algoritmos com Blocos | EF06CO06</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #f0f8ff;
+    --white:     #ffffff;
+    --surface:   #e3f2fd;
+    --blue:      #1a73e8;
+    --blue-lt:   #d2e3fc;
+    --blue-dk:   #0d47a1;
+    --green:     #1e9e5c;
+    --green-lt:  #d4f5e4;
+    --green-dk:  #145c36;
+    --orange:    #f57c00;
+    --orange-lt: #ffe8cc;
+    --orange-dk: #b35900;
+    --teal:      #0097a7;
+    --teal-lt:   #e0f7fa;
+    --teal-dk:   #005662;
+    --purple:    #7c3aed;
+    --purple-lt: #ede9fe;
+    --red:       #d32f2f;
+    --red-lt:    #fde8e8;
+    --text:      #1a2340;
+    --muted:     #5c6e8a;
+    --border:    #c8dff5;
+    --shadow:    0 2px 16px rgba(26,115,232,.09);
+    --shadow-lg: 0 8px 32px rgba(26,115,232,.13);
+
+    /* Cores dos blocos */
+    --blk-event:   #ffab19;
+    --blk-sense:   #5cb1d6;
+    --blk-var:     #ff8c1a;
+    --blk-look:    #9966ff;
+    --blk-op:      #59c059;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ══ TOPBAR ══ */
+  .topbar { background: var(--white); border-bottom: 2px solid var(--blue-lt); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 62px; box-shadow: 0 2px 8px rgba(26,115,232,.08); position: sticky; top: 0; z-index: 100; gap: 12px; }
+  .topbar-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .topbar-brand .logo { width: 36px; height: 36px; background: linear-gradient(135deg, var(--teal), var(--teal-dk)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 2px 8px rgba(0,151,167,.3); }
+  .topbar-brand span { font-weight: 800; font-size: .95rem; color: var(--teal-dk); line-height: 1.2; }
+  .topbar-brand small { display: block; font-size: .68rem; color: var(--muted); font-weight: 600; }
+  .step-nav { display: flex; align-items: center; gap: 5px; }
+  .step-dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); background: var(--white); color: var(--muted); font-size: .76rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; flex-shrink: 0; }
+  .step-dot:hover  { border-color: var(--teal); color: var(--teal); background: var(--teal-lt); }
+  .step-dot.active { background: var(--teal); border-color: var(--teal); color: #fff; box-shadow: 0 2px 8px rgba(0,151,167,.35); }
+  .step-dot.done   { background: var(--green-lt); border-color: var(--green); color: var(--green-dk); }
+  .step-line { width: 16px; height: 2px; background: var(--border); border-radius: 1px; }
+  .step-line.done { background: var(--green); }
+
+  main { flex: 1; max-width: 900px; width: 100%; margin: 0 auto; padding: 32px 20px 16px; display: flex; flex-direction: column; }
+
+  .screen { display: none; flex-direction: column; flex: 1; animation: fadeSlide .35s ease both; }
+  .screen.active { display: flex; }
+  .screen.back-anim { animation: fadeSlideBack .35s ease both; }
+  @keyframes fadeSlide     { from{opacity:0;transform:translateX(28px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes fadeSlideBack { from{opacity:0;transform:translateX(-28px)} to{opacity:1;transform:translateX(0)} }
+
+  .screen-header { margin-bottom: 24px; }
+  .step-badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 4px 14px; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px; }
+  .step-badge.teal   { background: var(--teal-lt);   color: var(--teal-dk); }
+  .step-badge.green  { background: var(--green-lt);  color: var(--green-dk); }
+  .step-badge.orange { background: var(--orange-lt); color: var(--orange-dk); }
+  .step-badge.blue   { background: var(--blue-lt);   color: var(--blue-dk); }
+  .screen-header h1 { font-size: clamp(1.5rem,4vw,2.1rem); font-weight: 900; line-height: 1.2; margin-bottom: 6px; }
+  .screen-header h1 em { font-style: normal; color: var(--teal); }
+  .screen-header p { font-size: .95rem; color: var(--muted); line-height: 1.6; }
+
+  .card { background: var(--white); border: 1.5px solid var(--border); border-radius: 18px; padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow); }
+  .card-title { font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+  .card-title.teal   { color: var(--teal); }
+  .card-title.green  { color: var(--green); }
+  .card-title.orange { color: var(--orange); }
+  .card-title.blue   { color: var(--blue); }
+  .card-title.purple { color: var(--purple); }
+
+  /* ══ HERO ══ */
+  .hero-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; padding: 40px 20px 20px; }
+  .hero-icon-big { width: 110px; height: 110px; background: linear-gradient(135deg, var(--teal-lt), #b2ebf2); border-radius: 30px; display: flex; align-items: center; justify-content: center; font-size: 3.8rem; margin-bottom: 28px; box-shadow: 0 12px 40px rgba(0,151,167,.18), 0 0 0 8px rgba(0,151,167,.06); border: 3px solid #80deea; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  .hero-wrap h1 { font-size: clamp(2rem,6vw,3.2rem); font-weight: 900; line-height: 1.15; margin-bottom: 14px; }
+  .hero-wrap h1 em { font-style: normal; color: var(--teal); }
+  .hero-wrap .subtitle { font-size: 1.05rem; color: var(--muted); line-height: 1.7; max-width: 560px; margin: 0 auto 30px; }
+  .hero-chips { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 36px; }
+  .hchip { display: flex; align-items: center; gap: 7px; background: var(--white); border: 2px solid var(--border); border-radius: 999px; padding: 7px 18px; font-size: .84rem; font-weight: 700; box-shadow: var(--shadow); }
+  .hchip.c-teal   { border-color: #80deea; background: var(--teal-lt);   color: var(--teal-dk); }
+  .hchip.c-green  { border-color: #a0dfc0; background: var(--green-lt);  color: var(--green-dk); }
+  .hchip.c-orange { border-color: #ffc990; background: var(--orange-lt); color: var(--orange-dk); }
+  .btn-start { padding: 16px 48px; background: linear-gradient(135deg, var(--teal), var(--teal-dk)); color: #fff; border: none; border-radius: 14px; font-family: 'Nunito',sans-serif; font-size: 1.1rem; font-weight: 900; cursor: pointer; transition: all .25s; box-shadow: 0 6px 22px rgba(0,151,167,.35); }
+  .btn-start:hover { filter: brightness(1.1); transform: translateY(-2px); }
+  .bncc-tag { margin-top: 22px; font-size: .76rem; color: var(--muted); font-weight: 600; font-family: 'Space Mono',monospace; letter-spacing: .06em; }
+
+  /* ══ CONCEITOS ══ */
+  .concept-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 14px; }
+  .concept-item { border-radius: 14px; padding: 18px; border: 2px solid transparent; transition: transform .18s,box-shadow .18s; }
+  .concept-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .concept-item.teal-item   { background: var(--teal-lt);   border-color: #80deea; }
+  .concept-item.orange-item { background: var(--orange-lt); border-color: #ffc990; }
+  .concept-item.green-item  { background: var(--green-lt);  border-color: #a0dfc0; }
+  .concept-item.purple-item { background: var(--purple-lt); border-color: #c4b5fd; }
+  .concept-emoji { font-size: 2rem; margin-bottom: 8px; }
+  .concept-item h3 { font-size: .95rem; font-weight: 800; margin-bottom: 5px; }
+  .concept-item.teal-item   h3 { color: var(--teal-dk); }
+  .concept-item.orange-item h3 { color: var(--orange-dk); }
+  .concept-item.green-item  h3 { color: var(--green-dk); }
+  .concept-item.purple-item h3 { color: #4c1d95; }
+  .concept-item p { font-size: .82rem; color: var(--muted); line-height: 1.5; }
+  code { background: #f0f0f0; padding: 2px 7px; border-radius: 5px; font-family: 'Space Mono',monospace; font-size: .82rem; color: var(--teal-dk); }
+
+  /* ══ BLOCOS VISUAIS (estilo Scratch) ══ */
+  .blk {
+    display: inline-flex; align-items: center; gap: 7px;
+    border-radius: 6px; padding: 9px 15px;
+    font-family: 'Nunito',sans-serif; font-size: .88rem; font-weight: 800;
+    color: #fff; position: relative; cursor: default;
+    box-shadow: 0 4px 0 rgba(0,0,0,.22);
+    flex-wrap: wrap; line-height: 1.3;
+    transition: transform .15s;
+  }
+  .blk:hover { transform: translateY(-2px); }
+  .blk-event  { background: var(--blk-event); box-shadow: 0 4px 0 #b87800; border-radius: 18px 18px 6px 6px; }
+  .blk-sense  { background: var(--blk-sense); box-shadow: 0 4px 0 #3a8ab0; }
+  .blk-var    { background: var(--blk-var);   box-shadow: 0 4px 0 #c55a00; }
+  .blk-look   { background: var(--blk-look);  box-shadow: 0 4px 0 #6633cc; }
+  .blk-op     { background: var(--blk-op);    box-shadow: 0 4px 0 #389038; border-radius: 999px; }
+  .blk-input  { background: rgba(255,255,255,.3); border-radius: 12px; padding: 2px 10px; font-family: 'Space Mono',monospace; font-size: .78rem; font-weight: 700; color: rgba(0,0,0,.75); white-space: nowrap; }
+  .blk-pill   { background: rgba(255,255,255,.25); border-radius: 999px; padding: 2px 10px; font-family: 'Space Mono',monospace; font-size: .78rem; font-weight: 700; color: #fff; }
+
+  .block-stack { display: flex; flex-direction: column; gap: 5px; }
+  .block-indent { margin-left: 28px; border-left: 4px solid rgba(255,171,25,.35); padding-left: 6px; display: flex; flex-direction: column; gap: 5px; }
+
+  /* ══ MONTADOR DE BLOCOS ══ */
+  .builder-wrap {
+    display: grid; grid-template-columns: 240px 1fr; gap: 20px;
+    min-height: 480px;
+  }
+
+  /* Paleta */
+  .palette {
+    background: #1e2a3a; border-radius: 14px; padding: 16px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .palette-title { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: #8da0bf; margin-bottom: 4px; }
+  .pal-block {
+    border-radius: 8px; padding: 9px 12px; font-size: .82rem; font-weight: 800;
+    color: #fff; cursor: grab; user-select: none;
+    box-shadow: 0 3px 0 rgba(0,0,0,.3); transition: all .15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pal-block:hover { transform: translateX(4px); filter: brightness(1.12); }
+  .pal-block:active { cursor: grabbing; transform: scale(.97); }
+  .pal-block.used { opacity: .4; pointer-events: none; filter: grayscale(.6); }
+  .pal-block.blk-event { background: var(--blk-event); box-shadow: 0 3px 0 #b87800; }
+  .pal-block.blk-sense { background: var(--blk-sense); box-shadow: 0 3px 0 #3a8ab0; }
+  .pal-block.blk-var   { background: var(--blk-var);   box-shadow: 0 3px 0 #c55a00; }
+  .pal-block.blk-look  { background: var(--blk-look);  box-shadow: 0 3px 0 #6633cc; }
+  .pal-block.blk-op    { background: var(--blk-op);    box-shadow: 0 3px 0 #389038; border-radius: 999px; }
+  .pal-sep { height: 1px; background: rgba(255,255,255,.08); margin: 4px 0; }
+
+  /* Área de montagem */
+  .assembly {
+    background: #f8faff; border: 2px dashed var(--border);
+    border-radius: 14px; padding: 16px;
+    min-height: 440px; position: relative;
+    transition: border-color .2s, background .2s;
+  }
+  .assembly.drag-over { border-color: var(--teal); background: var(--teal-lt); }
+  .assembly-hint {
+    position: absolute; inset: 0; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+    color: var(--muted); font-size: .9rem; font-weight: 700; gap: 8px;
+    pointer-events: none; opacity: 1; transition: opacity .2s;
+  }
+  .assembly-hint.hidden { opacity: 0; }
+  .assembly-hint .big { font-size: 2.5rem; }
+
+  .slot-list { display: flex; flex-direction: column; gap: 6px; min-height: 400px; }
+  .slot {
+    border: 2px dashed rgba(0,151,167,.3); border-radius: 10px;
+    padding: 10px 14px; min-height: 46px; display: flex; align-items: center;
+    transition: all .2s; position: relative;
+  }
+  .slot.filled { border-color: transparent; padding: 0; background: transparent; }
+  .slot.highlight { border-color: var(--teal); background: var(--teal-lt); }
+  .slot-label { font-size: .72rem; color: var(--muted); font-family: 'Space Mono',monospace; }
+
+  /* Bloco colocado */
+  .placed-block {
+    border-radius: 8px; padding: 9px 14px; font-size: .84rem; font-weight: 800;
+    color: #fff; display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 3px 0 rgba(0,0,0,.22); width: 100%;
+    animation: popIn .2s ease both; position: relative;
+    flex-wrap: wrap;
+  }
+  .placed-block .remove-btn {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(255,255,255,.25); border: none; color: #fff;
+    font-size: .75rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .placed-block .remove-btn:hover { background: rgba(255,255,255,.5); }
+  .placed-block.blk-event { background: var(--blk-event); box-shadow: 0 3px 0 #b87800; }
+  .placed-block.blk-sense { background: var(--blk-sense); box-shadow: 0 3px 0 #3a8ab0; }
+  .placed-block.blk-var   { background: var(--blk-var);   box-shadow: 0 3px 0 #c55a00; }
+  .placed-block.blk-look  { background: var(--blk-look);  box-shadow: 0 3px 0 #6633cc; }
+  .placed-block.blk-op    { background: var(--blk-op);    box-shadow: 0 3px 0 #389038; border-radius: 999px; }
+
+  .assembly-actions { display: flex; gap: 10px; margin-top: 14px; }
+  .btn-run {
+    flex: 1; padding: 12px; background: linear-gradient(135deg, var(--green), var(--green-dk));
+    color: #fff; border: none; border-radius: 10px;
+    font-family: 'Nunito',sans-serif; font-size: 1rem; font-weight: 800;
+    cursor: pointer; transition: all .2s; box-shadow: 0 4px 12px rgba(30,158,92,.3);
+  }
+  .btn-run:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .btn-clear { padding: 12px 18px; background: var(--white); border: 2px solid var(--border); border-radius: 10px; font-family: 'Nunito',sans-serif; font-size: .9rem; font-weight: 800; cursor: pointer; color: var(--muted); transition: all .2s; }
+  .btn-clear:hover { border-color: var(--red); color: var(--red); background: var(--red-lt); }
+
+  .feedback-assembly {
+    display: none; margin-top: 12px; padding: 12px 16px;
+    border-radius: 12px; font-size: .9rem; font-weight: 700; line-height: 1.6;
+    animation: popIn .25s ease;
+  }
+  .feedback-assembly.visible { display: block; }
+  .feedback-assembly.erro  { background: var(--red-lt);   border: 2px solid #f5b4b4; color: var(--red); }
+  .feedback-assembly.certo { background: var(--green-lt); border: 2px solid #8dd5b0; color: var(--green-dk); }
+
+  /* Legenda de cores */
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 700; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  /* ══ ROBÔ DO TROCO ══ */
+  .robo-wrap { background: #1a1a2e; border-radius: 18px; padding: 24px; border: 2px solid #2d2d54; position: relative; overflow: hidden; }
+  .robo-wrap::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse at 20% 20%, rgba(0,151,167,.1) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(92,177,214,.06) 0%, transparent 60%); pointer-events:none; }
+  .robo-title { font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: #4ecdc4; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .robo-vars { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .var-display { background: #161b22; border: 1.5px solid #4ecdc4; border-radius: 8px; padding: 6px 14px; display: flex; align-items: center; gap: 10px; }
+  .var-display .vd-name { font-family: 'Space Mono',monospace; font-size: .7rem; color: #4ecdc4; font-weight: 700; text-transform: uppercase; }
+  .var-display .vd-value { font-family: 'Space Mono',monospace; font-size: 1rem; color: #e6edf3; font-weight: 700; min-width: 60px; text-align: right; transition: color .3s; }
+  .var-display .vd-value.updated { color: #ffd700; }
+  .robo-screen { background: #0d1117; border-radius: 12px; padding: 16px 20px; margin-bottom: 14px; border: 1.5px solid #30363d; min-height: 80px; }
+  .robo-msg { display: flex; align-items: flex-start; gap: 10px; }
+  .robo-msg .sprite { font-size: 1.6rem; flex-shrink: 0; }
+  .robo-msg .bubble { background: #161b22; border: 1px solid #30363d; border-radius: 12px 12px 12px 4px; padding: 10px 14px; color: #e6edf3; font-size: .88rem; font-family: 'Nunito',sans-serif; font-weight: 700; line-height: 1.5; flex: 1; }
+  .robo-input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .robo-input { flex: 1; background: #0d1117; border: 2px solid #4ecdc4; border-radius: 10px; padding: 10px 14px; color: #e6edf3; font-family: 'Space Mono',monospace; font-size: 1rem; font-weight: 700; outline: none; transition: box-shadow .2s; }
+  .robo-input:focus { box-shadow: 0 0 0 3px rgba(78,205,196,.25); }
+  .robo-input::placeholder { color: #484f58; }
+  .robo-btn { padding: 10px 20px; background: linear-gradient(135deg, var(--teal), var(--teal-dk)); color: #fff; border: none; border-radius: 10px; font-family: 'Nunito',sans-serif; font-size: .9rem; font-weight: 800; cursor: pointer; transition: all .2s; box-shadow: 0 4px 0 rgba(0,0,0,.3); flex-shrink: 0; }
+  .robo-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .robo-btn:active { transform: translateY(1px); }
+  .robo-result { display: none; background: #0d1117; border: 1.5px solid #3fb950; border-radius: 10px; padding: 14px 16px; font-family: 'Space Mono',monospace; font-size: .88rem; color: #3fb950; font-weight: 700; animation: popIn .3s ease; margin-top: 10px; line-height: 1.8; }
+  .robo-result.visible { display: block; }
+  .robo-state { font-size: .72rem; color: #484f58; font-family: 'Space Mono',monospace; text-align: right; margin-top: 8px; }
+  .robo-btn-full { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--teal), var(--teal-dk)); color: #fff; border: none; border-radius: 10px; font-family: 'Nunito',sans-serif; font-size: .95rem; font-weight: 800; cursor: pointer; transition: all .2s; box-shadow: 0 4px 12px rgba(0,151,167,.3); margin-top: 8px; }
+  .robo-btn-full:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+  /* ══ QUIZ ══ */
+  .quiz-q-wrap { margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+  .quiz-q-wrap:last-of-type { border-bottom: none; }
+  .quiz-q { font-size: .95rem; font-weight: 700; margin-bottom: 11px; line-height: 1.5; display: flex; gap: 10px; align-items: flex-start; }
+  .q-num { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; border-radius: 50%; background: var(--teal); color: #fff; font-size: .78rem; font-weight: 900; flex-shrink: 0; margin-top: 1px; }
+  .options-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
+  .opt { background: var(--bg); border: 2px solid var(--border); border-radius: 10px; padding: 9px 15px; cursor: pointer; font-size: .87rem; transition: all .18s; display: flex; align-items: center; gap: 10px; font-weight: 600; }
+  .opt:hover { border-color: var(--teal); background: var(--teal-lt); }
+  .opt.certo         { border-color: var(--green); background: var(--green-lt); color: var(--green-dk); pointer-events: none; }
+  .opt.errado        { border-color: var(--red);   background: var(--red-lt);   color: var(--red);      pointer-events: none; }
+  .opt.mostrar-certo { border-color: var(--green); background: #f0faf5; pointer-events: none; }
+  .opt.bloqueado     { pointer-events: none; opacity: .5; }
+  .opt-letter { width: 26px; height: 26px; border-radius: 6px; background: var(--white); border: 1.5px solid var(--border); font-family: 'Space Mono',monospace; font-size: .74rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--muted); }
+  .opt.certo         .opt-letter { background: var(--green); border-color: var(--green); color: #fff; }
+  .opt.errado        .opt-letter { background: var(--red);   border-color: var(--red);   color: #fff; }
+  .opt.mostrar-certo .opt-letter { background: var(--green); border-color: var(--green); color: #fff; }
+  .feedback-msg { display: none; padding: 9px 14px; border-radius: 10px; font-size: .83rem; font-weight: 700; margin-top: 6px; animation: popIn .22s ease; }
+  .feedback-msg.visible { display: block; }
+  .feedback-msg.certo  { background: var(--green-lt); color: var(--green-dk); border: 1.5px solid #8dd5b0; }
+  .feedback-msg.errado { background: var(--red-lt);   color: var(--red);      border: 1.5px solid #f5b4b4; }
+  .btn-submit-quiz { margin-top: 20px; padding: 13px 28px; background: linear-gradient(135deg, var(--orange), var(--orange-dk)); color: #fff; border: none; border-radius: 12px; font-family: 'Nunito',sans-serif; font-size: 1rem; font-weight: 800; cursor: pointer; transition: all .2s; box-shadow: 0 4px 14px rgba(245,124,0,.3); display: none; }
+  .btn-submit-quiz.visible { display: inline-block; animation: popIn .3s ease; }
+
+  /* ══ NOTA OVERLAY ══ */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,86,98,.5); backdrop-filter: blur(6px); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+  .overlay.visible { display: flex; }
+  .nota-card { background: var(--white); border-radius: 24px; padding: 40px 36px; text-align: center; max-width: 480px; width: 100%; box-shadow: 0 24px 64px rgba(0,86,98,.25); animation: zoomIn .4s cubic-bezier(.34,1.56,.64,1) both; }
+  @keyframes zoomIn { from{opacity:0;transform:scale(.6)} to{opacity:1;transform:scale(1)} }
+  .nota-emoji  { font-size: 4rem; margin-bottom: 8px; }
+  .nota-titulo { font-size: 1.1rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .09em; margin-bottom: 10px; }
+  .nota-numero { font-family: 'Space Mono',monospace; font-size: 5rem; font-weight: 700; line-height: 1; margin-bottom: 6px; }
+  .nota-numero.nota-10  { color: var(--green-dk); }
+  .nota-numero.nota-8   { color: var(--teal); }
+  .nota-numero.nota-6   { color: var(--orange); }
+  .nota-numero.nota-4   { color: var(--orange-dk); }
+  .nota-numero.nota-low { color: var(--red); }
+  .nota-sub  { font-size: 1rem; color: var(--muted); margin-bottom: 18px; font-weight: 600; }
+  .nota-msg  { font-size: 1rem; line-height: 1.65; color: var(--text); margin-bottom: 28px; font-weight: 700; }
+  .nota-barra-wrap { background: var(--border); border-radius: 999px; height: 14px; overflow: hidden; margin-bottom: 28px; }
+  .nota-barra-fill { height: 100%; border-radius: 999px; transition: width 1s ease .2s; }
+  .estrelas { font-size: 2rem; letter-spacing: 4px; margin-bottom: 10px; }
+  .btn-fechar { padding: 12px 32px; background: linear-gradient(135deg, var(--teal), var(--teal-dk)); color: #fff; border: none; border-radius: 12px; font-family: 'Nunito',sans-serif; font-size: 1rem; font-weight: 800; cursor: pointer; transition: all .2s; box-shadow: 0 4px 14px rgba(0,151,167,.3); }
+
+  /* NAV */
+  .nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 2px solid var(--border); gap: 12px; }
+  .btn-nav { display: flex; align-items: center; gap: 7px; padding: 10px 22px; border-radius: 10px; font-family: 'Nunito',sans-serif; font-size: .92rem; font-weight: 800; cursor: pointer; transition: all .2s; border: 2px solid; }
+  .btn-nav.prev { background: var(--white); border-color: var(--border); color: var(--muted); }
+  .btn-nav.prev:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-lt); }
+  .btn-nav.next { background: linear-gradient(135deg, var(--teal), var(--teal-dk)); border-color: transparent; color: #fff; box-shadow: 0 4px 12px rgba(0,151,167,.3); margin-left: auto; }
+  .btn-nav.next:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .step-counter { font-size: .78rem; color: var(--muted); font-weight: 700; white-space: nowrap; }
+
+  /* FOOTER */
+  footer { background: var(--white); border-top: 2px solid var(--border); padding: 14px 24px; }
+  .footer-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .footer-left  { font-size: .78rem; color: var(--muted); font-weight: 600; }
+  .footer-left strong { color: var(--teal-dk); }
+  .footer-center { font-size: .82rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 7px; }
+  .footer-center .heart { color: var(--orange); }
+  .footer-right { font-size: .78rem; color: var(--muted); font-weight: 600; }
+
+  .info-box { border-radius: 12px; padding: 14px 18px; border: 2px solid; font-size: .9rem; line-height: 1.65; margin-bottom: 14px; }
+  .info-box.teal  { background: var(--teal-lt);   border-color: #80deea; color: var(--teal-dk); }
+  .info-box.green { background: var(--green-lt);  border-color: #8dd5b0; color: var(--green-dk); }
+  .progress-wrap { margin-top: 14px; display: flex; align-items: center; gap: 10px; font-size: .8rem; color: var(--muted); }
+  .progress-track { flex: 1; height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 999px; transition: width .5s ease; }
+  .progress-fill.teal  { background: linear-gradient(90deg, var(--teal), #4dd0e1); }
+  .progress-fill.green { background: linear-gradient(90deg, var(--green), #56c98a); }
+
+  @keyframes popIn { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
+  @media (max-width:640px) {
+    .builder-wrap { grid-template-columns: 1fr; }
+    .step-line { width: 9px; }
+    .step-dot  { width: 28px; height: 28px; font-size: .7rem; }
+    .footer-left,.footer-right { display: none; }
+    .footer-inner { justify-content: center; }
+    .nota-numero { font-size: 3.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <div class="topbar-brand">
+    <div class="logo">🧩</div>
+    <span><small>EF06CO06 </small></span>
+  </div>
+  <div class="step-nav" id="stepNav">
+    <div class="step-dot active" onclick="goTo(0)" title="Início">✦</div>
+    <div class="step-line" id="line01"></div>
+    <div class="step-dot" onclick="goTo(1)" title="Conceitos">1</div>
+    <div class="step-line" id="line12"></div>
+    <div class="step-dot" onclick="goTo(2)" title="Os Blocos">2</div>
+    <div class="step-line" id="line23"></div>
+    <div class="step-dot" onclick="goTo(3)" title="Montador">3</div>
+    <div class="step-line" id="line34"></div>
+    <div class="step-dot" onclick="goTo(4)" title="Robô do Troco">4</div>
+    <div class="step-line" id="line45"></div>
+    <div class="step-dot" onclick="goTo(5)" title="Quiz">5</div>
+  </div>
+</nav>
+
+<!-- OVERLAY NOTA -->
+<div class="overlay" id="overlay">
+  <div class="nota-card">
+    <div class="nota-emoji"  id="notaEmoji"></div>
+    <div class="estrelas"    id="notaEstrelas"></div>
+    <div class="nota-titulo">Sua Nota</div>
+    <div class="nota-numero" id="notaNumero"></div>
+    <div class="nota-sub"    id="notaSub"></div>
+    <div class="nota-barra-wrap"><div class="nota-barra-fill" id="notaBarra" style="width:0%"></div></div>
+    <div class="nota-msg"    id="notaMsg"></div>
+    <button class="btn-fechar" onclick="fecharNota()">✓ Fechar</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- ══ TELA 0: HERO ══ -->
+  <div class="screen active" id="screen0">
+    <div class="hero-wrap">
+      <div class="hero-icon-big">🧩</div>
+      <h1>Algoritmos com <em>Blocos</em></h1>
+      <p class="subtitle">
+        Vamos usar <strong>blocos de comando</strong> para montar um algoritmo. Editaremos um programa para Troco, assim entendemos como o computador executa cada instrução.
+      </p>
+      
+      <button class="btn-start" onclick="goTo(1)">Começar →</button>
+      </div>
+  </div>
+
+  <!-- ══ TELA 1: CONCEITOS ══ -->
+  <div class="screen" id="screen1">
+    <div class="screen-header">
+      <div class="step-badge teal">📚 Conceitos</div>
+      <h1>Do Papel para o <em>Computador</em></h1>
+      <p>Um PROGRAMA é uma sequência de comandos que o computador executa. Cada tipo de comando tem uma função diferente.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title teal">🧩 Os quatro tipos de comando</div>
+      <div class="concept-grid">
+        <div class="concept-item orange-item" style="border-left:4px solid var(--blk-event)">
+          <div class="concept-emoji">🚩</div>
+          <h3 style="color:#b87800">Eventos</h3>
+          <p>Definem <strong>quando</strong> o programa começa. Ex: "ao clicar no botão Iniciar". São sempre os primeiros blocos.</p>
+        </div>
+        <div class="concept-item teal-item" style="border-left:4px solid var(--blk-sense)">
+          <div class="concept-emoji">❓</div>
+          <h3>Entrada</h3>
+          <p>São os mecanismos que permitem ao programa receber dados do meio externo (periféricos ou sensores) para dentro do fluxo do algoritmo</p>
+        </div> 
+        <div class="concept-item orange-item" style="background:var(--orange-lt);border-left:4px solid var(--blk-var)">
+          <div class="concept-emoji">📦</div>
+          <h3>Variáveis</h3>
+          <p>Uma variável é um espaço alocado no computador destinado a armazenar um dado que pode ser modificado ou consultado a qualquer momento durante a execução do algoritmo.</p>
+        </div>
+        <div class="concept-item green-item" style="border-left:4px solid var(--blk-look)">
+          <div class="concept-emoji">🖥️</div>
+          <h3>Saída / Resultado</h3>
+          <p><strong>Exibe os resultados para o usuário. Pode mostrar texto, número ou uma mensagem completa, através dos dispositivos de saída (tela, caixas de som, motores).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="border-left:4px solid var(--teal)">
+      <div class="card-title teal">💡 A lógica do nosso programa</div>
+      <p style="font-size:.93rem;line-height:1.8;margin-bottom:12px">
+        O <strong>Robô do Troco</strong> vai executar exatamente esta sequência:
+      </p>
+      <div style="display:flex;flex-direction:column;gap:8px;padding-left:4px">
+        <div style="display:flex;align-items:center;gap:12px;font-size:.9rem;font-weight:700">
+          <span style="background:var(--blk-event);color:#fff;border-radius:6px;padding:3px 10px;font-size:.78rem;white-space:nowrap">🚩 Evento</span>
+          <span>O usuário clica em "Iniciar"</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:.9rem;font-weight:700">
+          <span style="background:var(--blk-sense);color:#fff;border-radius:6px;padding:3px 10px;font-size:.78rem;white-space:nowrap">❓ Entrada</span>
+          <span>Pergunta: "Qual o valor do produto?"</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:.9rem;font-weight:700">
+          <span style="background:var(--blk-var);color:#fff;border-radius:6px;padding:3px 10px;font-size:.78rem;white-space:nowrap">📦 Variável</span>
+          <span>Guarda a resposta em <code>preco_produto</code></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:.9rem;font-weight:700">
+          <span style="background:var(--blk-sense);color:#fff;border-radius:6px;padding:3px 10px;font-size:.78rem;white-space:nowrap">❓ Entrada</span>
+          <span>Pergunta: "Qual o valor pago?"</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:.9rem;font-weight:700">
+          <span style="background:var(--blk-var);color:#fff;border-radius:6px;padding:3px 10px;font-size:.78rem;white-space:nowrap">📦 Variável</span>
+          <span>Guarda a resposta em <code>valor_pago</code></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:.9rem;font-weight:700">
+          <span style="background:var(--blk-look);color:#fff;border-radius:6px;padding:3px 10px;font-size:.78rem;white-space:nowrap">🖥️ Resultado</span>
+          <span>Exibe: "Troco = valor_pago − preco_produto"</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn-nav prev" onclick="goTo(0)">← Voltar</button>
+      <span class="step-counter">Tela 2 de 6</span>
+      <button class="btn-nav next" onclick="goTo(2)">Conhecer os Blocos →</button>
+    </div>
+  </div>
+
+  <!-- ══ TELA 2: OS BLOCOS ══ -->
+  <div class="screen" id="screen2">
+    <div class="screen-header">
+      <div class="step-badge teal">🧩 Os Blocos</div>
+      <h1>Conheça os <em>Blocos</em> de Comando</h1>
+      <p>Cada bloco representa uma instrução específica. A ordem e a combinação deles formam o algoritmo.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title teal">📋 Sequência completa — Robô do Troco</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blk-event)"></div>Evento</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blk-sense)"></div>Entrada</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blk-var)"></div>Variável</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blk-look)"></div>Saída</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blk-op)"></div>Operação</div>
+      </div>
+
+      <div class="block-stack">
+        <div class="blk blk-event" style="border-radius:18px 18px 6px 6px">🚩 Quando o programa iniciar</div>
+        <div class="block-indent">
+          <div class="blk blk-sense">❓ Pergunte <span class="blk-input">Qual o valor do produto? (R$)</span> e aguarde</div>
+          <div class="blk blk-var">📦 Guarde a resposta em <span class="blk-pill">preco_produto</span></div>
+          <div class="blk blk-sense">❓ Pergunte <span class="blk-input">Qual o valor pago? (R$)</span> e aguarde</div>
+          <div class="blk blk-var">📦 Guarde a resposta em <span class="blk-pill">valor_pago</span></div>
+          <div class="blk blk-look">🖥️ Mostre <span class="blk-input">"Troco: R$"</span> + <span class="blk blk-op" style="font-size:.78rem;padding:4px 10px;box-shadow:none">valor_pago − preco_produto</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title teal">🔍 O que cada bloco faz</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;background:var(--bg);border-radius:12px;padding:12px 16px;border:1.5px solid var(--border)">
+          <div class="blk blk-event" style="border-radius:14px 14px 6px 6px;font-size:.78rem;padding:7px 12px;box-shadow:none">🚩 Iniciar</div>
+          <div style="font-size:.88rem;line-height:1.6"><strong>Ponto de partida.</strong> O programa só começa a executar a partir deste bloco. Sem ele, nada acontece.</div>
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;background:var(--bg);border-radius:12px;padding:12px 16px;border:1.5px solid var(--border)">
+          <div class="blk blk-sense" style="font-size:.78rem;padding:7px 12px;box-shadow:none;white-space:nowrap">❓ Pergunte e aguarde</div>
+          <div style="font-size:.88rem;line-height:1.6"><strong>Coletor de dados.</strong> Exibe uma pergunta ao usuário e o programa fica parado até receber a resposta. A resposta fica disponível para ser guardada.</div>
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;background:var(--bg);border-radius:12px;padding:12px 16px;border:1.5px solid var(--border)">
+          <div class="blk blk-var" style="font-size:.78rem;padding:7px 12px;box-shadow:none;white-space:nowrap">📦 Guarde em [var]</div>
+          <div style="font-size:.88rem;line-height:1.6"><strong>Armazenador.</strong> Pega o valor recebido e coloca dentro da variável indicada. É aqui que a "caixinha" recebe o conteúdo!</div>
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;background:var(--bg);border-radius:12px;padding:12px 16px;border:1.5px solid var(--border)">
+          <div class="blk blk-look" style="font-size:.78rem;padding:7px 12px;box-shadow:none;white-space:nowrap">🖥️ Mostre resultado</div>
+          <div style="font-size:.88rem;line-height:1.6"><strong>Saída.</strong> Exibe o resultado calculado usando os valores guardados nas variáveis. O cálculo acontece na hora da exibição.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn-nav prev" onclick="goTo(1)">← Voltar</button>
+      <span class="step-counter">Tela 3 de 6</span>
+      <button class="btn-nav next" onclick="goTo(3)">Montar o Algoritmo →</button>
+    </div>
+  </div>
+
+  <!-- ══ TELA 3: MONTADOR DE BLOCOS ══ -->
+  <div class="screen" id="screen3">
+    <div class="screen-header">
+      <div class="step-badge green">🛠️ Atividade</div>
+      <h1>Monte o <em>Algoritmo</em>!</h1>
+      <p>Arraste (ou clique) nos blocos da paleta e coloque-os na <strong>ordem correta</strong> para criar o Robô do Troco.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title green">🧩 Arraste os blocos para montar a sequência</div>
+
+      <div class="builder-wrap">
+        <!-- Paleta -->
+        <div class="palette">
+          <div class="palette-title">🧩 Blocos disponíveis</div>
+          <div class="pal-sep"></div>
+          <div class="pal-block blk-event" id="pb0" draggable="true" ondragstart="dragStart(event,'pb0',0)" onclick="clickBlock('pb0',0)">🚩 Quando iniciar</div>
+          <div class="pal-block blk-sense" id="pb1" draggable="true" ondragstart="dragStart(event,'pb1',1)" onclick="clickBlock('pb1',1)">❓ Pergunte "Valor do produto?"</div>
+          <div class="pal-block blk-var"   id="pb2" draggable="true" ondragstart="dragStart(event,'pb2',2)" onclick="clickBlock('pb2',2)">📦 Guarde em preco_produto</div>
+          <div class="pal-block blk-sense" id="pb3" draggable="true" ondragstart="dragStart(event,'pb3',3)" onclick="clickBlock('pb3',3)">❓ Pergunte "Valor pago?"</div>
+          <div class="pal-block blk-var"   id="pb4" draggable="true" ondragstart="dragStart(event,'pb4',4)" onclick="clickBlock('pb4',4)">📦 Guarde em valor_pago</div>
+          <div class="pal-block blk-look"  id="pb5" draggable="true" ondragstart="dragStart(event,'pb5',5)" onclick="clickBlock('pb5',5)">🖥️ Mostre o Troco</div>
+          <!-- distratores extras para embaralhar -->
+          <div class="pal-sep"></div>
+          <div class="palette-title" style="font-size:.65rem">Extras (não pertencem aqui)</div>
+          <div class="pal-block blk-op"   id="pb6" draggable="true" ondragstart="dragStart(event,'pb6',6)" onclick="clickBlock('pb6',6)">➗ Divida valor_pago por 2</div>
+          <div class="pal-block blk-look" id="pb7" draggable="true" ondragstart="dragStart(event,'pb7',7)" onclick="clickBlock('pb7',7)">🖥️ Mostre "Olá, mundo!"</div>
+        </div>
+
+        <!-- Área de montagem -->
+        <div class="assembly" id="assembly" ondragover="allowDrop(event)" ondrop="dropBlock(event)" ondragleave="dragLeave(event)">
+          <div class="assembly-hint" id="asmHint">
+            <span class="big">👆</span>
+            <span>Clique nos blocos ou arraste-os para cá</span>
+          </div>
+          <div class="slot-list" id="slotList"></div>
+        </div>
+      </div>
+
+      <div class="assembly-actions">
+        <button class="btn-clear" onclick="clearAssembly()">🗑 Limpar</button>
+        <button class="btn-run"   onclick="checkAssembly()">▶ Verificar Algoritmo</button>
+      </div>
+
+      <div class="feedback-assembly" id="fbAssembly"></div>
+
+      <div class="progress-wrap" style="margin-top:16px">
+        <span>Blocos colocados: <strong id="blkCount" style="color:var(--teal)">0</strong></span>
+        <div class="progress-track"><div class="progress-fill teal" id="blkBar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn-nav prev" onclick="goTo(2)">← Voltar</button>
+      <span class="step-counter">Tela 4 de 6</span>
+      <button class="btn-nav next" onclick="goTo(4)">Testar o Robô →</button>
+    </div>
+  </div>
+
+  <!-- ══ TELA 4: ROBÔ DO TROCO ══ -->
+  <div class="screen" id="screen4">
+    <div class="screen-header">
+      <div class="step-badge teal">🤖 Simulador</div>
+      <h1>O <em>Robô do Troco</em> em Ação!</h1>
+      <p>Aqui o algoritmo que montamos está <strong>funcionando de verdade</strong>. Insira valores diferentes e veja as variáveis mudando em tempo real!</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title teal">💻 Execute o Algoritmo</div>
+      <div class="robo-wrap">
+        <div class="robo-title">🤖 &nbsp;Robô do Troco — Algoritmo em execução</div>
+
+        <div class="robo-vars">
+          <div class="var-display">
+            <span class="vd-name">preco_produto</span>
+            <span class="vd-value" id="vd-preco">—</span>
+          </div>
+          <div class="var-display">
+            <span class="vd-name">valor_pago</span>
+            <span class="vd-value" id="vd-pago">—</span>
+          </div>
+        </div>
+
+        <!-- Passos visuais do algoritmo -->
+        <div id="algoSteps" style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px">
+          <div class="algo-step" id="as0" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;font-size:.82rem;font-weight:700;background:#161b22;border:1px solid #30363d;color:#484f58;transition:all .3s"><span style="background:var(--blk-event);border-radius:4px;padding:2px 8px;font-size:.7rem;color:#fff">🚩</span> Quando iniciar</div>
+          <div class="algo-step" id="as1" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;font-size:.82rem;font-weight:700;background:#161b22;border:1px solid #30363d;color:#484f58;transition:all .3s;margin-left:20px"><span style="background:var(--blk-sense);border-radius:4px;padding:2px 8px;font-size:.7rem;color:#fff">❓</span> Perguntar valor do produto</div>
+          <div class="algo-step" id="as2" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;font-size:.82rem;font-weight:700;background:#161b22;border:1px solid #30363d;color:#484f58;transition:all .3s;margin-left:20px"><span style="background:var(--blk-var);border-radius:4px;padding:2px 8px;font-size:.7rem;color:#fff">📦</span> Guardar em preco_produto</div>
+          <div class="algo-step" id="as3" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;font-size:.82rem;font-weight:700;background:#161b22;border:1px solid #30363d;color:#484f58;transition:all .3s;margin-left:20px"><span style="background:var(--blk-sense);border-radius:4px;padding:2px 8px;font-size:.7rem;color:#fff">❓</span> Perguntar valor pago</div>
+          <div class="algo-step" id="as4" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;font-size:.82rem;font-weight:700;background:#161b22;border:1px solid #30363d;color:#484f58;transition:all .3s;margin-left:20px"><span style="background:var(--blk-var);border-radius:4px;padding:2px 8px;font-size:.7rem;color:#fff">📦</span> Guardar em valor_pago</div>
+          <div class="algo-step" id="as5" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;font-size:.82rem;font-weight:700;background:#161b22;border:1px solid #30363d;color:#484f58;transition:all .3s;margin-left:20px"><span style="background:var(--blk-look);border-radius:4px;padding:2px 8px;font-size:.7rem;color:#fff">🖥️</span> Calcular e mostrar troco</div>
+        </div>
+
+        <div class="robo-screen" id="roboScreen">
+          <div class="robo-msg">
+            <span class="sprite">🤖</span>
+            <div class="bubble" id="bubbleMsg">Pronto! Clique em ▶ Iniciar para executar o algoritmo.</div>
+          </div>
+        </div>
+
+        <div id="roboControls">
+          <div class="robo-input-row" id="roboInputRow" style="display:none">
+            <input class="robo-input" type="number" id="roboInput" placeholder="Digite um valor (ex: 7.50)" step="0.01">
+            <button class="robo-btn" onclick="roboResponder()">OK ↵</button>
+          </div>
+          <button class="robo-btn-full" id="btnIniciar" onclick="roboIniciar()">▶ Iniciar Algoritmo</button>
+        </div>
+
+        <div class="robo-result" id="roboResult"></div>
+        <div class="robo-state" id="roboState">Aguardando início…</div>
+      </div>
+    </div>
+
+    <div class="card" style="border-left:4px solid var(--green)">
+      <div class="card-title green">🎯 Teste com esses valores</div>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:9px;font-size:.9rem">
+        <li style="display:flex;gap:10px;align-items:center">🍬 Produto <strong>R$ 3,00</strong> · Pago <strong>R$ 5,00</strong> → Troco: <strong style="color:var(--green-dk)">R$ 2,00</strong></li>
+        <li style="display:flex;gap:10px;align-items:center">🥐 Produto <strong>R$ 7,00</strong> · Pago <strong>R$ 10,00</strong> → Troco: <strong style="color:var(--green-dk)">R$ 3,00</strong></li>
+        <li style="display:flex;gap:10px;align-items:center">🛒 Produto <strong>R$ 45,90</strong> · Pago <strong>R$ 50,00</strong> → Troco: <strong style="color:var(--green-dk)">R$ 4,10</strong></li>
+      </ul>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn-nav prev" onclick="goTo(3)">← Voltar</button>
+      <span class="step-counter">Tela 5 de 6</span>
+      <button class="btn-nav next" onclick="goTo(5)">Fazer o Quiz →</button>
+    </div>
+  </div>
+
+
+  <!-- ══ TELA 5: QUIZ (gerado dinamicamente) ══ -->
+  <div class="screen" id="screen5">
+    <div class="screen-header">
+      <div class="step-badge orange">🕵️ Atividade avaliativa </div>
+      <h1>Quiz: <em>Algoritmos com Blocos</em></h1>
+      <p>Responda as 10 perguntas. As questões e alternativas aparecem em <strong>ordem aleatória</strong> a cada acesso. Ao terminar, clique em <strong>"Ver minha nota"</strong>!</p>
+    </div>
+    <div class="card">
+      <div class="card-title orange">❓ 10 Perguntas — Valendo Nota de 0 a 10</div>
+      <div id="quizContainer"></div>
+      <button class="btn-submit-quiz" id="btnSubmit" onclick="verNota()">🏆 Ver minha nota</button>
+    </div>
+    <div class="nav-buttons">
+      <button class="btn-nav prev" onclick="goTo(4)">← Voltar</button>
+      <span class="step-counter">Tela 6 de 6</span>
+    </div>
+  </div>
+
+</main>
+
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+      <div class="footer-center">
+      <span>Material Pedagógico</span>
+      <span class="heart">|</span>
+      <strong>Profª Adriana Bett Terebinto</strong>
+    </div>
+     </div>
+</footer>
+
+<script>
+// ══ NAVEGAÇÃO ══
+let current = 0;
+const visited = new Array(6).fill(false);
+visited[0] = true;
+function goTo(n) {
+  if (n < 0 || n > 5) return;
+  const cur = document.getElementById('screen'+current);
+  const nxt = document.getElementById('screen'+n);
+  if (!nxt) return;
+  cur.classList.remove('active','back-anim');
+  nxt.classList.remove('back-anim');
+  if (n < current) nxt.classList.add('back-anim');
+  nxt.classList.add('active');
+  visited[n]=true; current=n; updateNav(); if(n===5) buildQuiz();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function updateNav() {
+  document.querySelectorAll('.step-dot').forEach((d,i)=>{
+    d.classList.remove('active','done');
+    if(i===current) d.classList.add('active');
+    else if(visited[i]) d.classList.add('done');
+  });
+  for(let i=0;i<5;i++){const l=document.getElementById('line'+i+(i+1));if(l)l.classList.toggle('done',visited[i+1]);}
+}
+
+// ══ MONTADOR DE BLOCOS ══
+// Sequência correta (excluindo extras 6,7)
+const CORRECT_ORDER = [0,1,2,3,4,5];
+const BLOCK_DEFS = [
+  { cls:'blk-event', label:'🚩 Quando o programa iniciar' },
+  { cls:'blk-sense', label:'❓ Pergunte "Qual o valor do produto?"' },
+  { cls:'blk-var',   label:'📦 Guarde em preco_produto' },
+  { cls:'blk-sense', label:'❓ Pergunte "Qual o valor pago?"' },
+  { cls:'blk-var',   label:'📦 Guarde em valor_pago' },
+  { cls:'blk-look',  label:'🖥️ Mostre o Troco calculado' },
+  { cls:'blk-op',    label:'➗ Divida valor_pago por 2' },
+  { cls:'blk-look',  label:'🖥️ Mostre "Olá, mundo!"' },
+];
+
+let placed = []; // array of block ids
+let dragging = null;
+
+function dragStart(e, palId, blockId) {
+  dragging = blockId;
+  e.dataTransfer.setData('text/plain', blockId);
+}
+function allowDrop(e) {
+  e.preventDefault();
+  document.getElementById('assembly').classList.add('drag-over');
+}
+function dragLeave() {
+  document.getElementById('assembly').classList.remove('drag-over');
+}
+function dropBlock(e) {
+  e.preventDefault();
+  document.getElementById('assembly').classList.remove('drag-over');
+  const id = parseInt(e.dataTransfer.getData('text/plain'));
+  addBlock(id);
+}
+function clickBlock(palId, blockId) {
+  addBlock(blockId);
+}
+
+function addBlock(id) {
+  if (placed.includes(id)) return; // já colocado
+  placed.push(id);
+  document.getElementById('pb'+id).classList.add('used');
+  renderAssembly();
+  updateProgress();
+  document.getElementById('fbAssembly').classList.remove('visible');
+}
+
+function removeBlock(idx) {
+  const id = placed[idx];
+  placed.splice(idx,1);
+  document.getElementById('pb'+id).classList.remove('used');
+  renderAssembly();
+  updateProgress();
+  document.getElementById('fbAssembly').classList.remove('visible');
+}
+
+function renderAssembly() {
+  const list = document.getElementById('slotList');
+  const hint = document.getElementById('asmHint');
+  list.innerHTML = '';
+  if (placed.length === 0) { hint.classList.remove('hidden'); return; }
+  hint.classList.add('hidden');
+  placed.forEach((id, idx) => {
+    const def = BLOCK_DEFS[id];
+    const div = document.createElement('div');
+    div.className = 'slot filled';
+    const blk = document.createElement('div');
+    blk.className = 'placed-block ' + def.cls;
+    if (idx === 0) blk.style.borderRadius = '14px 14px 6px 6px';
+    blk.innerHTML = def.label + `<button class="remove-btn" onclick="removeBlock(${idx})">✕</button>`;
+    div.appendChild(blk);
+    list.appendChild(div);
+  });
+}
+
+function updateProgress() {
+  const n = placed.length;
+  document.getElementById('blkCount').textContent = n;
+  document.getElementById('blkBar').style.width = Math.min(n/6*100,100)+'%';
+}
+
+function clearAssembly() {
+  placed.forEach(id => document.getElementById('pb'+id).classList.remove('used'));
+  placed = [];
+  renderAssembly();
+  updateProgress();
+  document.getElementById('fbAssembly').classList.remove('visible');
+}
+
+function checkAssembly() {
+  const fb = document.getElementById('fbAssembly');
+  fb.classList.add('visible');
+
+  if (placed.length === 0) {
+    fb.className = 'feedback-assembly visible erro';
+    fb.textContent = '⚠️ Coloque pelo menos um bloco antes de verificar!';
+    return;
+  }
+
+  // Verifica se tem os 6 corretos na ordem certa (pode ter extras, mas a ordem dos corretos deve estar certa)
+  const placedCorrect = placed.filter(id => CORRECT_ORDER.includes(id));
+  const isCorrectOrder = JSON.stringify(placedCorrect) === JSON.stringify(CORRECT_ORDER);
+  const hasExtras = placed.some(id => !CORRECT_ORDER.includes(id));
+
+  if (isCorrectOrder && !hasExtras) {
+    fb.className = 'feedback-assembly visible certo';
+    fb.innerHTML = '🎉 <strong>Perfeito!</strong> Seu algoritmo está na ordem correta! Os 6 blocos estão encaixados exatamente como o Robô do Troco precisa para funcionar. Agora vá para a Tela 5 e teste o robô!';
+  } else if (isCorrectOrder && hasExtras) {
+    fb.className = 'feedback-assembly visible erro';
+    fb.innerHTML = '⚠️ A ordem dos blocos corretos está certa, mas há <strong>blocos extras</strong> que não pertencem ao Robô do Troco! Remova os que não fazem parte do algoritmo.';
+  } else if (placed.length < 6) {
+    fb.className = 'feedback-assembly visible erro';
+    fb.innerHTML = `⚠️ Faltam blocos! Você colocou ${placed.length} de 6 blocos necessários. Verifique se adicionou todos.`;
+  } else {
+    // Dica sobre o primeiro erro
+    let dica = '';
+    for (let i = 0; i < CORRECT_ORDER.length; i++) {
+      if (placedCorrect[i] !== CORRECT_ORDER[i]) {
+        const esperado = BLOCK_DEFS[CORRECT_ORDER[i]].label;
+        dica = `Na posição ${i+1}, o bloco correto é: <strong>"${esperado}"</strong>`;
+        break;
+      }
+    }
+    fb.className = 'feedback-assembly visible erro';
+    fb.innerHTML = `❌ A ordem não está correta ainda. ${dica}. Pense: o que o programa precisa fazer <em>primeiro</em>?`;
+  }
+}
+
+// ══ ROBÔ DO TROCO ══
+let roboStep = 0, precoProduto = 0;
+
+function highlightStep(idx) {
+  for(let i=0;i<6;i++){
+    const s=document.getElementById('as'+i);
+    s.style.background = i===idx ? '#1f2d3d' : '#161b22';
+    s.style.color = i===idx ? '#e6edf3' : '#484f58';
+    s.style.borderColor = i===idx ? '#4ecdc4' : '#30363d';
+  }
+}
+
+function roboIniciar() {
+  roboStep = 1;
+  document.getElementById('btnIniciar').style.display = 'none';
+  document.getElementById('roboResult').classList.remove('visible');
+  document.getElementById('vd-preco').textContent = '—';
+  document.getElementById('vd-pago').textContent  = '—';
+  document.getElementById('vd-preco').classList.remove('updated');
+  document.getElementById('vd-pago').classList.remove('updated');
+  document.getElementById('roboInputRow').style.display = 'flex';
+  document.getElementById('roboInput').value = '';
+  document.getElementById('roboInput').placeholder = 'Valor do produto (ex: 7.50)';
+  document.getElementById('bubbleMsg').textContent = 'Qual o valor do produto? (R$)';
+  document.getElementById('roboState').textContent = 'Executando: bloco ❓ Perguntar preco_produto';
+  document.getElementById('roboInput').focus();
+  highlightStep(1);
+}
+
+function roboResponder() {
+  const val = parseFloat(document.getElementById('roboInput').value);
+  if (isNaN(val) || val < 0) {
+    document.getElementById('bubbleMsg').textContent = '⚠️ Digite um número válido!';
+    return;
+  }
+  document.getElementById('roboInput').value = '';
+
+  if (roboStep === 1) {
+    precoProduto = val;
+    highlightStep(2);
+    const vd = document.getElementById('vd-preco');
+    vd.textContent = 'R$ '+val.toFixed(2);
+    vd.classList.add('updated');
+    setTimeout(()=>vd.classList.remove('updated'), 800);
+
+    setTimeout(()=>{
+      roboStep = 2;
+      highlightStep(3);
+      document.getElementById('bubbleMsg').textContent = 'Ótimo! Agora, qual o valor pago? (R$)';
+      document.getElementById('roboInput').placeholder = 'Valor pago (ex: 20.00)';
+      document.getElementById('roboState').textContent = 'Executando: bloco ❓ Perguntar valor_pago';
+      document.getElementById('roboInput').focus();
+    }, 500);
+
+  } else if (roboStep === 2) {
+    if (val < precoProduto) {
+      document.getElementById('bubbleMsg').textContent = '❌ O valor pago não pode ser menor que o preço!';
+      return;
+    }
+    const valorPago = val;
+    highlightStep(4);
+    const vd = document.getElementById('vd-pago');
+    vd.textContent = 'R$ '+val.toFixed(2);
+    vd.classList.add('updated');
+    setTimeout(()=>vd.classList.remove('updated'), 800);
+
+    setTimeout(()=>{
+      highlightStep(5);
+      const troco = (valorPago - precoProduto).toFixed(2);
+      roboStep = 3;
+      document.getElementById('roboInputRow').style.display = 'none';
+      document.getElementById('bubbleMsg').textContent = `Troco: R$ ${troco} ✅`;
+      document.getElementById('roboState').textContent = 'Programa concluído ✓';
+
+      const res = document.getElementById('roboResult');
+      res.innerHTML =
+        `<div>📦 preco_produto &nbsp;= R$ ${precoProduto.toFixed(2)}</div>` +
+        `<div>📦 valor_pago &nbsp;&nbsp;&nbsp;= R$ ${valorPago.toFixed(2)}</div>` +
+        `<div style="margin-top:6px;color:#ffd700">✅ Troco = R$ ${valorPago.toFixed(2)} − R$ ${precoProduto.toFixed(2)} = R$ ${troco}</div>`;
+      res.classList.add('visible');
+
+      document.getElementById('btnIniciar').style.display = 'block';
+      document.getElementById('btnIniciar').textContent = '🔄 Executar novamente';
+    }, 500);
+  }
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && document.activeElement.id==='roboInput') roboResponder();
+});
+
+// ══ QUIZ — GERAÇÃO ALEATÓRIA ══
+const QUIZ_BANK = [
+  {
+    q: 'Qual bloco deve ser sempre o <strong>primeiro</strong> da sequência?',
+    opts: [
+      { text: 'Mostre o resultado', correct: false },
+      { text: 'Quando o programa iniciar', correct: true },
+      { text: 'Guarde em variável', correct: false },
+      { text: 'Pergunte ao usuário', correct: false }
+    ]
+  },
+  {
+    q: 'O que o bloco <strong>"Pergunte e aguarde"</strong> faz?',
+    opts: [
+      { text: 'Calcula o troco automaticamente', correct: false },
+      { text: 'Exibe uma pergunta e pausa o programa até o usuário responder', correct: true },
+      { text: 'Cria uma nova variável', correct: false },
+      { text: 'Encerra o programa', correct: false }
+    ]
+  },
+  {
+    q: 'Qual é a função do bloco <strong>"Guarde em preco_produto"</strong>?',
+    opts: [
+      { text: 'Exibir o preço na tela', correct: false },
+      { text: 'Apagar o valor digitado', correct: false },
+      { text: 'Armazenar a resposta do usuário dentro da variável preco_produto', correct: true },
+      { text: 'Criar a variável preco_produto', correct: false }
+    ]
+  },
+  {
+    q: 'Por que o bloco <strong>"Perguntar"</strong> deve vir ANTES do bloco <strong>"Guardar"</strong>?',
+    opts: [
+      { text: 'Por uma questão estética', correct: false },
+      { text: 'Porque só é possível guardar algo que já foi recebido — precisa perguntar antes para ter resposta', correct: true },
+      { text: 'Porque o computador lê de baixo para cima', correct: false },
+      { text: 'Não importa a ordem', correct: false }
+    ]
+  },
+  {
+    q: 'Quantas variáveis o <strong>Robô do Troco</strong> precisa para funcionar?',
+    opts: [
+      { text: 'Uma', correct: false },
+      { text: 'Duas: preco_produto e valor_pago', correct: true },
+      { text: 'Três', correct: false },
+      { text: 'Nenhuma', correct: false }
+    ]
+  },
+  {
+    q: 'O que acontece quando o usuário digita o valor e <strong>confirma</strong>?',
+    opts: [
+      { text: 'O programa encerra', correct: false },
+      { text: 'O valor é descartado', correct: false },
+      { text: 'O programa continua para o próximo bloco da sequência', correct: true },
+      { text: 'O valor aparece na tela sem ser guardado', correct: false }
+    ]
+  },
+  {
+    q: 'Qual bloco <strong>exibe o resultado</strong> do cálculo para o usuário ver?',
+    opts: [
+      { text: 'Quando iniciar', correct: false },
+      { text: 'Guarde em variável', correct: false },
+      { text: 'Pergunte e aguarde', correct: false },
+      { text: 'Mostre o resultado', correct: true }
+    ]
+  },
+  {
+    q: 'Se o produto custa <strong>R$ 12,00</strong> e o cliente paga <strong>R$ 20,00</strong>, o que o robô deve mostrar?',
+    opts: [
+      { text: 'Troco: R$ 32,00', correct: false },
+      { text: 'Troco: R$ 8,00', correct: true },
+      { text: 'Troco: R$ 12,00', correct: false },
+      { text: 'Troco: R$ 240,00', correct: false }
+    ]
+  },
+  {
+    q: 'Por que usamos <strong>variáveis</strong> em vez de números fixos no algoritmo?',
+    opts: [
+      { text: 'Porque números fixos são ilegais na programação', correct: false },
+      { text: 'Para que o mesmo algoritmo funcione com qualquer valor que o usuário digitar', correct: true },
+      { text: 'Para deixar o programa mais bonito', correct: false },
+      { text: 'Porque o computador não entende números', correct: false }
+    ]
+  },
+  {
+    q: 'Qual é a <strong>ordem CORRETA</strong> dos blocos no Robô do Troco?',
+    opts: [
+      { text: 'Guardar → Perguntar → Iniciar → Mostrar', correct: false },
+      { text: 'Mostrar → Perguntar → Guardar → Iniciar', correct: false },
+      { text: 'Iniciar → Perguntar preco → Guardar preco → Perguntar pago → Guardar pago → Mostrar troco', correct: true },
+      { text: 'Iniciar → Guardar → Guardar → Perguntar → Mostrar', correct: false }
+    ]
+  }
+];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+let quizAnswered = [];
+let quizScore = 0;
+
+function buildQuiz() {
+  const shuffledQuestions = shuffle(QUIZ_BANK);
+  quizAnswered = new Array(shuffledQuestions.length).fill(false);
+  quizScore = 0;
+
+  const LETTERS = ['A','B','C','D'];
+  const container = document.getElementById('quizContainer');
+  container.innerHTML = '';
+  document.getElementById('btnSubmit').classList.remove('visible');
+
+  shuffledQuestions.forEach((q, qi) => {
+    const qNum = qi + 1;
+    const shuffledOpts = shuffle(q.opts);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'quiz-q-wrap';
+
+    const qDiv = document.createElement('div');
+    qDiv.className = 'quiz-q';
+    qDiv.innerHTML = `<span class="q-num">${qNum}</span><span>${q.q}</span>`;
+    wrap.appendChild(qDiv);
+
+    const optsList = document.createElement('div');
+    optsList.className = 'options-list';
+
+    const fb = document.createElement('div');
+    fb.className = 'feedback-msg';
+
+    shuffledOpts.forEach((opt, oi) => {
+      const btn = document.createElement('div');
+      btn.className = 'opt';
+      btn.innerHTML = `<span class="opt-letter">${LETTERS[oi]}</span>${opt.text}`;
+
+      btn.addEventListener('click', () => {
+        if (quizAnswered[qi]) return;
+        quizAnswered[qi] = true;
+
+        const allBtns = optsList.querySelectorAll('.opt');
+
+        if (opt.correct) {
+          btn.classList.add('certo');
+          fb.textContent = '🎉 Correto! Muito bem!';
+          fb.className = 'feedback-msg visible certo';
+          quizScore++;
+        } else {
+          btn.classList.add('errado');
+          fb.textContent = '❌ Não é essa. Revise a sequência dos blocos!';
+          fb.className = 'feedback-msg visible errado';
+          // Marca a correta
+          shuffledOpts.forEach((o, oi2) => {
+            if (o.correct) {
+              allBtns[oi2].classList.add('mostrar-certo');
+            }
+          });
+        }
+
+        // Bloqueia as demais
+        allBtns.forEach(b => {
+          if (!b.classList.contains('certo') && !b.classList.contains('errado') && !b.classList.contains('mostrar-certo'))
+            b.classList.add('bloqueado');
+        });
+
+        if (quizAnswered.every(Boolean)) {
+          document.getElementById('btnSubmit').classList.add('visible');
+          document.getElementById('btnSubmit').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+
+      optsList.appendChild(btn);
+    });
+
+    wrap.appendChild(optsList);
+    wrap.appendChild(fb);
+    container.appendChild(wrap);
+  });
+}
+
+function verNota() {
+  const nota=score, pct=nota*10;
+  let emoji,stars,msg,cls,barColor;
+  if(nota===10)    {emoji='🏆';stars='⭐⭐⭐⭐⭐';cls='nota-10'; barColor='var(--green)'; msg='Perfeito! Você dominou completamente os blocos de algoritmo e o Robô do Troco!';}
+  else if(nota>=8) {emoji='🥇';stars='⭐⭐⭐⭐';  cls='nota-8';  barColor='var(--teal)';  msg='Ótimo! Você entendeu muito bem a sequência dos blocos e a lógica do algoritmo!';}
+  else if(nota>=6) {emoji='🥈';stars='⭐⭐⭐';    cls='nota-6';  barColor='var(--orange)';msg='Bom trabalho! Volte e experimente o montador de blocos mais uma vez para fixar a ordem.';}
+  else if(nota>=4) {emoji='🥉';stars='⭐⭐';      cls='nota-4';  barColor='var(--orange-dk)';msg='Você está progredindo! Releia os conceitos dos blocos e pratique o simulador.';}
+  else             {emoji='📚';stars='⭐';        cls='nota-low';barColor='var(--red)';   msg='Não desanime! Revise a sequência de blocos nas telas 2 e 3 e tente novamente.';}
+
+  document.getElementById('notaEmoji').textContent=emoji;
+  document.getElementById('notaEstrelas').textContent=stars;
+  document.getElementById('notaNumero').textContent=nota+'.0';
+  document.getElementById('notaNumero').className='nota-numero '+cls;
+  document.getElementById('notaSub').textContent=score+' de 10 questões corretas';
+  document.getElementById('notaMsg').textContent=msg;
+  document.getElementById('notaBarra').style.background=barColor;
+  document.getElementById('overlay').classList.add('visible');
+  setTimeout(()=>{ document.getElementById('notaBarra').style.width=pct+'%'; },100);
+}
+function fecharNota(){document.getElementById('overlay').classList.remove('visible');}
+document.getElementById('overlay').addEventListener('click',function(e){if(e.target===this)fecharNota();});
+</script>
+</body>
+</html>
